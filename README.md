@@ -25,8 +25,8 @@ Uploading the source to GitHub does not require a live app URL and does not host
 4. Set your commit identity and commit the app:
 
    ```bash
-   git config user.name "kaswebtester"
-   git config user.email "kaswebtester@gmail.com"
+   git config user.name "gitusername"
+   git config user.email "example@gmail.com"
    git add .
    git commit -m "Prepare app for deployment"
    ```
