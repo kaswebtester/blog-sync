@@ -4,6 +4,52 @@ Remix Shopify app that imports https://roselandusa.substack.com/feed into native
 
 See [the content model and acceptance checks](docs/content-model.md) for the native RSS workflow, protected editing, Shopify metafields/metaobjects and automatic worker setup. Final Figma storefront styling remains a separate theme step.
 
+## Upload to your GitHub repository
+
+Uploading the source to GitHub does not require a live app URL and does not host the app. The configuration uses `https://your-app-name.com` as a placeholder until you deploy.
+
+1. Create an empty GitHub repository (without an initial README) in your own account.
+2. Sign in to GitHub CLI with the account that can write to that repository:
+
+   ```bash
+   gh auth login --hostname github.com
+   gh auth setup-git
+   ```
+
+3. From this app folder, initialize Git only if the folder does not already contain a `.git` directory:
+
+   ```bash
+   git init -b main
+   ```
+
+4. Set your commit identity and commit the app:
+
+   ```bash
+   git config user.name "kaswebtester"
+   git config user.email "kaswebtester@gmail.com"
+   git add .
+   git commit -m "Prepare app for deployment"
+   ```
+
+5. Replace `YOUR_USERNAME` and `YOUR_REPOSITORY` below with your destination. If `origin` already exists, use `git remote set-url origin` instead of `git remote add origin`.
+
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+   git push -u origin main
+   ```
+
+The GitHub account used for authentication must have write access; setting the commit name and email does not change the signed-in account. Keep `.env`, credentials, and local database files out of Git; the supplied `.gitignore` excludes them.
+
+## Set the app URL when deploying
+
+1. Deploy the app to a Node host with a persistent SQLite volume and obtain its public HTTPS URL.
+2. Copy `.env.example` to `.env` on the host and replace `SHOPIFY_APP_URL=https://your-app-name.com` with your actual app URL. Fill in your Shopify API key, API secret, database location, and cron secret.
+3. In the Shopify TOML configuration you use (`shopify.app.toml` or `shopify.app.roseland-journal.toml`), set your own app client ID, replace `application_url` with the same URL, and update both callback URLs to `<your-app-url>/auth/callback` and `<your-app-url>/auth/shopify/callback`.
+4. Link the configuration to your Shopify app, publish its configuration, and install it on a development store. See the Run section below for the existing local workflow.
+5. Run `npm ci`, `npm run setup`, and `npm run build` on the host, then start the app with `npm start`. Configure the host to keep the app running and use the same app URL for your worker or scheduler.
+
+The app URL is the address of your deployed app. `https://roselandusa.substack.com/feed` is the separate RSS source used to import articles. To import another publication, change the Substack RSS URL in **Feed settings** after installation. The current feed validator accepts HTTPS Substack `/feed` URLs only.
+
 ## Run
 
 1. Run `npm install` and copy `.env.example` to `.env`.
@@ -41,7 +87,7 @@ Open **Feed settings** in the app to change the feed display name, Substack RSS 
 
 Build with `npm run build`, initialize the database with `npm run setup`, and run `npm start` on a Node host. Use a persistent volume for the SQLite database (including OAuth sessions and import history); run a single app instance. Do not use ephemeral filesystem hosting for the database.
 
-Configure an external scheduler to POST to `https://your-app.example.com/api/sync` every 15 minutes with `Authorization: Bearer <CRON_SECRET>`. The scheduler itself is not provisioned. The endpoint uses authenticated-admin-saved feed settings rather than accepting a feed URL in the request. Per-post failures are returned in the sync report without stopping other imports. Monitor reports for errors. Uninstall webhooks remove credentials while retaining import history for safe reinstallation.
+Configure an external scheduler to POST to `https://your-app-name.com/api/sync` every 15 minutes with `Authorization: Bearer <CRON_SECRET>`. The scheduler itself is not provisioned. The endpoint uses authenticated-admin-saved feed settings rather than accepting a feed URL in the request. Per-post failures are returned in the sync report without stopping other imports. Monitor reports for errors. Uninstall webhooks remove credentials while retaining import history for safe reinstallation.
 
 ## Checks
 

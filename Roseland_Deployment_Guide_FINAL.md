@@ -1,7 +1,7 @@
 # Roseland Journal — Shopify App Deployment & Troubleshooting Guide
 
 **Repository:** https://github.com/chandamin/blog-sync-roseland  
-**Production URL:** https://blog-sync.roselandusa.com  
+**Production URL:** https://your-app-name.com  
 **DigitalOcean Droplet IP:** `157.230.86.207`  
 **Server directory:** `/var/www/blog-sync-roseland`  
 **SSH key (on Mac):** `~/.ssh/roseland_digitalocean`  
@@ -63,7 +63,7 @@ pm2 restart roseland-shopify-app --update-env
 pm2 list
 pm2 logs roseland-shopify-app --lines 30 --nostream
 curl -I http://127.0.0.1:3000
-curl -I https://blog-sync.roselandusa.com
+curl -I https://your-app-name.com
 ```
 
 A `302` redirect to `/app` has previously been normal for this project. Confirm the app opens from Shopify Admin and test the modified feature; a successful HTTP response alone does not verify OAuth or blog sync.
@@ -88,7 +88,7 @@ cd /var/www/blog-sync-roseland
 npx shopify app deploy --config roseland-journal
 ```
 
-Do not run Shopify CLI deployment for ordinary backend-only code changes. Check that production app URLs match `https://blog-sync.roselandusa.com` and that redirect URLs match the actual OAuth routes.
+Do not run Shopify CLI deployment for ordinary backend-only code changes. Check that production app URLs match `https://your-app-name.com` and that redirect URLs match the actual OAuth routes.
 
 ## C. Production environment variables — where and how to use them
 
@@ -112,7 +112,7 @@ If `.env` does not exist, use `cp .env.example .env` **once**, then fill in the 
 NODE_ENV=production
 SHOPIFY_API_KEY=YOUR_SHOPIFY_APP_CLIENT_ID
 SHOPIFY_API_SECRET=YOUR_ROTATED_SHOPIFY_APP_SECRET
-SHOPIFY_APP_URL=https://blog-sync.roselandusa.com
+SHOPIFY_APP_URL=https://your-app-name.com
 SCOPES=read_content,write_content,read_metaobjects,write_metaobjects,read_products
 DATABASE_URL=file:./dev.db
 CRON_SECRET=GENERATE_A_NEW_PRIVATE_RANDOM_VALUE
@@ -123,7 +123,7 @@ CRON_SECRET=GENERATE_A_NEW_PRIVATE_RANDOM_VALUE
 | `NODE_ENV` | `production` when running the deployed app. |
 | `SHOPIFY_API_KEY` | App client ID / API key from the correct Shopify app in its Dev Dashboard. |
 | `SHOPIFY_API_SECRET` | Secret from the same app; **rotate the secret exposed earlier**, then store the replacement only in `.env`. |
-| `SHOPIFY_APP_URL` | Public HTTPS URL for this deployment: `https://blog-sync.roselandusa.com`. Also update Shopify app configuration where required. |
+| `SHOPIFY_APP_URL` | Public HTTPS URL for this deployment: `https://your-app-name.com`. Also update Shopify app configuration where required. |
 | `SCOPES` | App's requested permissions; keep consistent with the Shopify TOML app configuration and granted scopes. |
 | `DATABASE_URL` | Prisma SQLite database reference. `file:./dev.db` was used at setup; **verify its actual resolved location** from Prisma config before backing up or moving the DB. |
 | `CRON_SECRET` | Long secret protecting the sync endpoint; generate with `openssl rand -hex 32` and never share the output. |
@@ -196,7 +196,7 @@ npm test
 npm run build
 pm2 restart roseland-shopify-app --update-env
 pm2 list
-curl -I https://blog-sync.roselandusa.com
+curl -I https://your-app-name.com
 ```
 
 **Proceed to the next line only when the previous command succeeds.** The live service might experience downtime during this recovery; for critical traffic use a staged deployment and a rollback plan.
@@ -265,21 +265,21 @@ curl -I http://127.0.0.1:3000
 sudo nginx -t
 ```
 
-Restore the app process/build, then retry `curl -I https://blog-sync.roselandusa.com`.
+Restore the app process/build, then retry `curl -I https://your-app-name.com`.
 
 ### 5. Shopify OAuth: `The redirect_uri is not whitelisted`
 
-**Cause found:** `shopify.app.toml` and `shopify.app.roseland-journal.toml` still contained `https://your-app.example.com` callback placeholders.
+**Cause found:** `shopify.app.toml` and `shopify.app.roseland-journal.toml` still contained `https://your-app-name.com` callback placeholders.
 
 **Fix:** Set the real application URL and the callback paths used by the app, then deploy the correct Shopify config:
 
 ```toml
-application_url = "https://blog-sync.roselandusa.com"
+application_url = "https://your-app-name.com"
 
 [auth]
 redirect_urls = [
-  "https://blog-sync.roselandusa.com/auth/callback",
-  "https://blog-sync.roselandusa.com/auth/shopify/callback"
+  "https://your-app-name.com/auth/callback",
+  "https://your-app-name.com/auth/shopify/callback"
 ]
 ```
 
@@ -325,7 +325,7 @@ free -h
 swapon --show
 df -h
 nginx -t
-curl -I https://blog-sync.roselandusa.com
+curl -I https://your-app-name.com
 ```
 
 **Reference:** This guide documents the commands and errors from the Roseland DigitalOcean deployment. It is a manual update procedure, not an automatic CI/CD pipeline.
@@ -387,7 +387,7 @@ npm run build
 pm2 restart roseland-shopify-app --update-env
 pm2 list
 pm2 logs roseland-shopify-app --lines 30 --nostream
-curl -I https://blog-sync.roselandusa.com
+curl -I https://your-app-name.com
 ```
 
 ### Notes for future reliability
