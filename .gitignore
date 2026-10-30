@@ -1,0 +1,14 @@
+node_modules/
+build/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+*.zip
+audit-production.json
+prisma/*.db*
+.shopify/
+.npm-cache/
+.DS_Store

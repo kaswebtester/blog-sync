@@ -1,0 +1,79 @@
+client_id = "REPLACE_WITH_SHOPIFY_CLIENT_ID"
+name = "Roseland Journal"
+application_url = "https://your-app.example.com"
+embedded = true
+[build]
+automatically_update_urls_on_dev = true
+[access_scopes]
+scopes = "read_content,write_content,read_metaobjects,write_metaobjects,read_products"
+[auth]
+redirect_urls = ["https://your-app.example.com/auth/callback", "https://your-app.example.com/auth/shopify/callback"]
+[webhooks]
+api_version = "2026-10"
+[[webhooks.subscriptions]]
+topics = ["app/uninstalled"]
+uri = "/webhooks/app/uninstalled"
+
+[metaobjects.app.journal_block]
+name = "Journal editorial block"
+display_name_field = "label"
+access.admin = "merchant_read_write"
+access.storefront = "public_read"
+[metaobjects.app.journal_block.fields.label]
+name = "Label"
+type = "single_line_text_field"
+required = true
+[metaobjects.app.journal_block.fields.layout]
+name = "Layout"
+type = "single_line_text_field"
+required = true
+[metaobjects.app.journal_block.fields.text]
+name = "Text or quote"
+type = "multi_line_text_field"
+[metaobjects.app.journal_block.fields.image_url]
+name = "Image URL"
+type = "url"
+[metaobjects.app.journal_block.fields.second_image_url]
+name = "Second image URL"
+type = "url"
+[metaobjects.app.journal_block.fields.caption]
+name = "Caption"
+type = "multi_line_text_field"
+[metaobjects.app.journal_block.fields.second_caption]
+name = "Second caption"
+type = "multi_line_text_field"
+[metaobjects.app.journal_block.fields.alt]
+name = "Image description"
+type = "single_line_text_field"
+[metaobjects.app.journal_block.fields.second_alt]
+name = "Second image description"
+type = "single_line_text_field"
+[article.metafields.app.editorial_blocks]
+name = "Journal editorial blocks"
+type = "list.metaobject_reference<$app:journal_block>"
+access.admin = "merchant_read_write"
+access.storefront = "public_read"
+[article.metafields.app.related_products]
+name = "Related products"
+type = "list.product_reference"
+access.admin = "merchant_read_write"
+access.storefront = "public_read"
+[article.metafields.app.related_stories]
+name = "Related Journal stories"
+type = "list.article_reference"
+access.admin = "merchant_read_write"
+access.storefront = "public_read"
+
+[metaobjects.app.journal_block.fields.second_text]
+name = "Second column text"
+type = "multi_line_text_field"
+[article.metafields.app.article_design]
+name = "Journal article design"
+type = "single_line_text_field"
+access.admin = "merchant_read_write"
+access.storefront = "public_read"
+[article.metafields.app.content_mode]
+name = "Journal content source"
+type = "single_line_text_field"
+access.admin = "merchant_read_write"
+access.storefront = "public_read"

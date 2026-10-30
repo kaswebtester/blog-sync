@@ -1,0 +1,29 @@
+{
+  "sections": {
+    "main": {
+      "type": "journal-index",
+      "settings": {
+        "blog": "journal",
+        "heading": "Journal",
+        "introduction": "<p>Stories about natural materials, American making, and<br/>furniture designed to age well.</p>",
+        "show_featured": true,
+        "posts_per_page": 12,
+        "show_excerpts": false,
+        "columns": 3,
+        "content_width": 1120,
+        "gap": 24,
+        "padding_top": 40,
+        "padding_bottom": 28,
+        "heading_size": 42,
+        "title_size": 20,
+        "background": "#FAF9F5",
+        "text_color": "#667776",
+        "link_color": "#667776",
+        "show_filters": true
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

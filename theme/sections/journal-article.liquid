@@ -1,0 +1,410 @@
+{% liquid
+  assign editorial_namespace = section.settings.editorial_namespace | default: 'app--440567988225'
+  if article.metafields[editorial_namespace].article_design == blank and article.metafields['app--440567988225'].article_design != blank
+    assign editorial_namespace = 'app--440567988225'
+  endif
+  assign article_design = article.metafields[editorial_namespace].article_design.value | default: 'standard'
+  if article_design != 'custom'
+    assign article_design = 'standard'
+  endif
+  assign content_mode = article.metafields[editorial_namespace].content_mode.value | default: 'append'
+  assign journal_back_url = section.settings.back_url | default: blog.url
+  assign editorial_blocks = article.metafields[editorial_namespace].editorial_blocks.value
+  assign related_products = article.metafields[editorial_namespace].related_products.value
+  assign related_stories = article.metafields[editorial_namespace].related_stories.value
+%}
+<article data-journal-design="{{ article_design }}" data-editorial-namespace="{{ editorial_namespace | escape }}" class="ro-article journal-article-page{% if article_design == 'custom' %} ro-article--custom{% else %} ro-article--standard{% endif %}" style="--ra-paper: {{ section.settings.background }}; --ra-ink: {{ section.settings.text_color }}; --ra-heading: {{ section.settings.heading_color }}; --ra-body-width: {{ section.settings.body_width }}px; --ra-body-size: {{ section.settings.body_size }}px; --ra-title-size: {{ section.settings.title_size }}px;">
+  <div class="ro-article__inner">
+    {% if request.design_mode %}
+      <p class="ro-article__editor-status">Article design: {% if article_design == 'custom' %}2 — Custom{% else %}1 — Standard{% endif %}. Content: {{ content_mode | escape }}. Namespace: {{ editorial_namespace | escape }}.</p>
+      {% if article.metafields[editorial_namespace].article_design == blank %}<p class="ro-article__editor-status">No saved design found. Save the design in the app and verify the Editorial metafield namespace matches this app installation.</p>{% endif %}
+    {% endif %}
+    <header class="ro-article__header">
+      <a class="ro-article__journal" href="{{ journal_back_url }}">{{ blog.title | default: 'Journal' | escape }}</a>
+      {% if section.settings.show_date %}<time class="ro-article__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: '%B %d, %Y' }}</time>{% endif %}
+      <h1>{{ article.title | escape }}</h1>
+      {% if section.settings.show_categories and article.tags.size > 0 %}<p class="ro-article__categories">{{ article.tags | join: ', ' | escape }}</p>{% endif %}
+      {% if section.settings.show_excerpt and article.excerpt != blank %}<div class="ro-article__excerpt">{{ article.excerpt }}</div>{% endif %}
+      {% if section.settings.show_author %}
+        <div class="ro-article__meta">
+          {% if section.settings.show_author and article.author != blank %}<span>{{ article.author | escape }}</span>{% endif %}
+        </div>
+      {% endif %}
+    </header>
+    {% assign show_hero = section.settings.show_featured_image %}
+    {% if article_design == 'custom' and section.settings.custom_featured_image and content_mode != 'sections' %}{% assign show_hero = true %}{% endif %}
+    {% if content_mode == 'sections' and editorial_blocks != blank and section.settings.show_editorial %}{% assign show_hero = false %}{% endif %}
+    {% if article.content contains '<img' and content_mode != 'sections' %}{% assign show_hero = false %}{% endif %}
+    {% if show_hero and article.image %}
+      <figure class="ro-article__hero">
+        {{ article.image | image_url: width: 2200 | image_tag: widths: '480, 720, 1080, 1440, 1800, 2200', sizes: '(min-width: 1240px) 1120px, 94vw', loading: 'eager', fetchpriority: 'high', alt: article.image.alt }}
+        {% if section.settings.show_image_caption and article.image.alt != blank %}<figcaption>{{ article.image.alt | escape }}</figcaption>{% endif %}
+      </figure>
+    {% endif %}
+    {% assign show_original_body = true %}
+    {% if content_mode == 'sections' and section.settings.show_editorial and editorial_blocks != blank %}{% assign show_original_body = false %}{% endif %}
+    {% if show_original_body %}<div class="ro-article__body journal-body" data-journal-native-body data-auto-layout="{{ section.settings.auto_layout }}">{{ article.content }}</div>{% endif %}
+    {% if content_mode != 'original' and section.settings.show_editorial and editorial_blocks != blank %}
+      <div class="ro-article__body ro-editorial">
+        {% for editorial in editorial_blocks limit: 50 %}
+          {% assign editorial_layout = editorial.layout.value %}
+          {% case editorial_layout %}
+            {% when 'text' %}
+              {% if editorial.text.value != blank %}<div class="ro-editorial__text">{{ editorial.text.value | escape | newline_to_br }}</div>{% endif %}
+            {% when 'two_columns' %}
+              <div class="ro-editorial__columns"><div>{{ editorial.text.value | escape | newline_to_br }}</div><div>{{ editorial.second_text.value | escape | newline_to_br }}</div></div>
+            {% when 'pull_quote' %}
+              {% if editorial.text.value != blank %}<blockquote>{{ editorial.text.value | escape | newline_to_br }}</blockquote>{% endif %}
+            {% when 'image', 'wide_image', 'two_images', 'image_text' %}
+              <div class="ro-editorial__images{% if editorial_layout == 'two_images' %} journal-pair{% elsif editorial_layout == 'image_text' %} journal-image-text{% endif %}{% if editorial_layout == 'wide_image' %} journal-wide{% endif %}">
+                {% if editorial.image_url.value != blank %}
+                  <figure{% if editorial_layout == 'wide_image' %} class="journal-wide"{% endif %}>
+                    <img src="{{ editorial.image_url.value | escape }}" alt="{{ editorial.alt.value | escape }}" loading="lazy" width="1600" height="1200">
+                    {% if editorial.caption.value != blank %}<figcaption>{{ editorial.caption.value | escape | newline_to_br }}</figcaption>{% endif %}
+                  </figure>
+                {% endif %}
+                {% if editorial_layout == 'two_images' and editorial.second_image_url.value != blank %}
+                  <figure><img src="{{ editorial.second_image_url.value | escape }}" alt="{{ editorial.second_alt.value | escape }}" loading="lazy" width="1600" height="1200">{% if editorial.second_caption.value != blank %}<figcaption>{{ editorial.second_caption.value | escape | newline_to_br }}</figcaption>{% endif %}</figure>
+                {% endif %}
+                {% if editorial_layout == 'image_text' and editorial.text.value != blank %}<div>{{ editorial.text.value | escape | newline_to_br }}</div>{% endif %}
+              </div>
+          {% endcase %}
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if section.settings.show_related_products and related_products != blank %}
+      <section class="ro-article__related" aria-labelledby="RelatedProducts-{{ section.id }}"><h2 id="RelatedProducts-{{ section.id }}">{{ section.settings.products_heading | escape }}</h2><div class="ro-article__related-grid">
+        {% for product in related_products limit: 12 %}{% if product.url != blank %}<article><a href="{{ product.url }}">{% if product.featured_image %}{{ product.featured_image | image_url: width: 720 | image_tag: widths: '320, 480, 720', sizes: '(min-width: 750px) 30vw, 90vw', loading: 'lazy', alt: product.featured_image.alt }}{% endif %}<h3>{{ product.title | escape }}</h3></a></article>{% endif %}{% endfor %}
+      </div></section>
+    {% endif %}
+    {% if section.settings.show_related_stories and related_stories != blank %}
+      <section class="ro-article__related" aria-labelledby="RelatedStories-{{ section.id }}"><h2 id="RelatedStories-{{ section.id }}">{{ section.settings.stories_heading | escape }}</h2><div class="ro-article__related-grid">
+        {% for story in related_stories limit: 12 %}{% if story.url != blank %}<article><a href="{{ story.url }}">{% if story.image %}{{ story.image | image_url: width: 720 | image_tag: widths: '320, 480, 720', sizes: '(min-width: 750px) 30vw, 90vw', loading: 'lazy', alt: story.image.alt }}{% endif %}<h3>{{ story.title | escape }}</h3></a></article>{% endif %}{% endfor %}
+      </div></section>
+    {% endif %}
+    <footer class="ro-article__footer">
+      <a class="ro-article__back" href="{{ journal_back_url }}"><span aria-hidden="true">&#8592;</span> {{ section.settings.back_label | escape }}</a>
+      {% if section.settings.show_navigation %}
+        {% if blog.previous_article or blog.next_article %}
+          <nav class="ro-article__navigation" aria-label="{{ section.settings.back_label | escape }}">
+            <div>{% if blog.previous_article %}<a href="{{ blog.previous_article.url }}"><span class="ro-article__nav-label">{{ section.settings.previous_label | escape }}</span><span>{{ blog.previous_article.title | escape }}</span></a>{% endif %}</div>
+            <div>{% if blog.next_article %}<a href="{{ blog.next_article.url }}"><span class="ro-article__nav-label">{{ section.settings.next_label | escape }}</span><span>{{ blog.next_article.title | escape }}</span></a>{% endif %}</div>
+          </nav>
+        {% endif %}
+      {% endif %}
+    </footer>
+  </div>
+</article>
+{% stylesheet %}
+.ro-article{--ra-media-width:930px;--ra-reading-width:var(--ra-body-width);background:var(--ra-paper);color:var(--ra-ink);padding:44px 28px 36px;font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.ro-article *{box-sizing:border-box}
+.ro-article__inner{max-width:1120px;margin:auto;min-width:0}
+.ro-article a{color:inherit;text-underline-offset:3px}
+.ro-article a:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.ro-article__header{text-align:center;margin:0 auto 70px;max-width:700px}
+.ro-article__journal{font-family:Georgia,"Times New Roman",serif;font-size:42px;line-height:1.25;text-decoration:none;color:var(--ra-heading)!important}
+.ro-article__date{display:block;font-size:14px;line-height:1.5;margin:14px 0 16px;color:var(--ra-heading)}
+.ro-article h1{font-family:Georgia,"Times New Roman",serif;font-size:var(--ra-title-size);line-height:1.4;font-weight:400;margin:0;color:var(--ra-heading);letter-spacing:0;text-wrap:balance}
+.ro-article__categories{font-size:14px;font-style:italic;margin:12px 0 0;line-height:1.5}
+.ro-article__excerpt{font-size:18px;line-height:1.6;margin:20px auto 0}
+.ro-article__meta{font-size:13px;margin-top:16px}
+.ro-article__hero{max-width:var(--ra-media-width);margin:0 auto 36px}
+.ro-article__hero img{display:block;width:100%;height:auto}
+.ro-article__body{font-size:var(--ra-body-size);line-height:1.45;overflow-wrap:anywhere}
+.ro-article__body>p,.ro-article__body>h2,.ro-article__body>h3,.ro-article__body>h4,.ro-article__body>ul,.ro-article__body>ol,.ro-article__body>div{max-width:var(--ra-reading-width);margin-left:auto;margin-right:auto}
+.ro-article__body p{margin-top:0;margin-bottom:1.35em}
+.ro-article__body h2,.ro-article__body h3,.ro-article__body h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;line-height:1.3;margin-top:1.8em;margin-bottom:.7em}
+.ro-article__body img{display:block;max-width:100%;height:auto;margin:auto}
+.ro-article__body figure,.ro-article__body .captioned-image-container,.ro-article__body p:has(img),.ro-article__body p:has(picture){width:100%;max-width:var(--ra-media-width);margin:30px auto 12px}
+.ro-article__body figure img{width:100%}
+.ro-article__body .captioned-image-container figure{margin:0;max-width:100%}
+.ro-article figcaption,.ro-article .image-caption{font:10px/1.5 Arial,sans-serif;letter-spacing:.015em;text-transform:uppercase;text-align:left;margin-top:7px}
+.ro-article__body .ro-editorial__text{max-width:var(--ra-reading-width);margin:30px auto}
+.ro-article__body .ro-editorial__images{max-width:var(--ra-media-width);margin:24px auto 14px}
+.ro-article__body .ro-editorial__images>figure{margin:0;max-width:100%}
+.ro-article__body .journal-wide{max-width:1120px}
+.ro-article__body .journal-pair,.ro-article__body .journal-image-text,.ro-article__body .ro-editorial__columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;max-width:var(--ra-media-width);margin:24px auto}
+.ro-article__body .journal-pair figure{margin:0;max-width:100%;min-width:0}
+.ro-article__body .journal-pair>.captioned-image-container{margin:0;max-width:none;min-width:0}
+.ro-article__body .journal-pair img{width:100%;aspect-ratio:1;object-fit:cover}
+.ro-article__body .journal-image-text{max-width:var(--ra-reading-width);align-items:start;gap:30px;margin:40px auto}
+.ro-article__body .journal-image-text>figure,.ro-article__body .journal-image-text>.captioned-image-container{grid-column:2;grid-row:1;margin:0;min-width:0}
+.ro-article__body .journal-image-text>div:not(.captioned-image-container){grid-column:1;grid-row:1;min-width:0}
+.ro-article__body .ro-editorial__columns{max-width:var(--ra-reading-width);gap:30px}
+.ro-editorial__columns>div{min-width:0}
+.ro-article__body blockquote{max-width:var(--ra-reading-width);font-family:Georgia,"Times New Roman",serif;font-size:26px;font-style:italic;font-weight:400;line-height:1.35;text-align:center;margin:44px auto 30px;padding:0 20px;border:0;color:var(--ra-ink)}
+.ro-article__body blockquote p{margin:0}
+.ro-article__body table{display:block;overflow:auto;max-width:100%}
+.ro-article__body iframe,.ro-article__body video{max-width:100%}
+.ro-article__footer{max-width:var(--ra-reading-width);margin:50px auto 0;font-size:14px;line-height:1.5}
+.ro-article__back{text-decoration:none}
+.ro-article__navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;border-top:1px solid color-mix(in srgb,var(--ra-ink) 20%,transparent);margin-top:24px;padding-top:20px}
+.ro-article__navigation>div:last-child{text-align:right}
+.ro-article__navigation a{text-decoration:none}
+.ro-article__nav-label{display:block;font-size:11px;margin-bottom:8px}
+.ro-article__related{max-width:var(--ra-media-width);margin:48px auto 0;border-top:1px solid color-mix(in srgb,var(--ra-ink) 20%,transparent);padding-top:28px}
+.ro-article__related h2{font-size:24px;font-weight:400}
+.ro-article__related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.ro-article__related-grid img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}
+.ro-article__related-grid h3{font-size:18px;font-weight:400;line-height:1.4}
+.ro-article__related-grid a{text-decoration:none}
+.ro-article__body .journal-native-hero{max-width:1120px;margin:0 auto 40px}
+.ro-article__body .journal-native-hero img{aspect-ratio:2/1;object-fit:cover}
+.ro-article__body .journal-image-text figure,.ro-article__body .journal-image-text .captioned-image-container{margin:0;max-width:none}
+.ro-article__body .journal-image-text>.journal-native-text p:last-child{margin-bottom:0}
+.ro-article__body .journal-image-text img{width:100%;height:auto}
+.ro-article__body .image-link-expand{display:none}
+.ro-article--custom .ro-article__header{margin-bottom:32px}
+.ro-article--custom .ro-article__hero{max-width:1120px;margin-bottom:40px}
+.ro-article__editor-status{font:13px/1.5 Arial,sans-serif;padding:12px;background:#fff;border:1px solid #ccc;color:#333}
+@media(max-width:749px){
+.ro-article{padding:30px 20px}
+.ro-article__header{margin-bottom:42px}
+.ro-article__journal{font-size:32px}
+.ro-article h1{font-size:clamp(22px,5vw,var(--ra-title-size))}
+.ro-article__date{font-size:12px;margin:10px 0}
+.ro-article__body{font-size:clamp(15px,var(--ra-body-size),18px);line-height:1.55}
+.ro-article__body .journal-pair{gap:12px}
+.ro-article__body .journal-image-text,.ro-article__body .ro-editorial__columns{grid-template-columns:1fr;gap:20px}
+.ro-article__body .journal-image-text>div:not(.captioned-image-container){grid-column:1;grid-row:1}
+.ro-article__body .journal-image-text>figure,.ro-article__body .journal-image-text>.captioned-image-container{grid-column:1;grid-row:2}
+.ro-article__body blockquote{font-size:23px;padding:0;margin:32px auto}
+.ro-article__related-grid{grid-template-columns:1fr}
+}
+{% endstylesheet %}
+{% javascript %}
+(() => {
+  const isMedia = element => element && !element.matches('.journal-pair,.journal-image-text,.journal-wide') && (element.matches('figure,.captioned-image-container') || element.matches('p') && element.querySelector('img')) && element.querySelectorAll('img').length === 1;
+  function arrange(article) {
+    const body = article.querySelector('[data-journal-native-body]');
+    if (!body || body.dataset.autoLayout === 'false' || body.dataset.layoutApplied === 'true') return;
+    body.dataset.layoutApplied = 'true';
+    const custom = article.dataset.journalDesign === 'custom';
+    if (custom) {
+      const first = body.firstElementChild;
+      if (isMedia(first)) first.classList.add('journal-wide', 'journal-native-hero');
+      for (const paragraph of Array.from(body.children)) {
+        if (!paragraph.matches('p') || !paragraph.querySelector('em,i') || paragraph.querySelector('img')) continue;
+        const value = paragraph.textContent.trim();
+        if (!/^[“"‘]/.test(value) || !/[”"’][.!?]?$/.test(value)) continue;
+        const quote = document.createElement('blockquote');
+        paragraph.replaceWith(quote);
+        quote.append(paragraph);
+      }
+      for (const quote of Array.from(body.children).filter(element => element.matches('blockquote'))) {
+        const image = quote.previousElementSibling;
+        if (!isMedia(image)) continue;
+        const paragraphs = [];
+        let previous = image.previousElementSibling;
+        while (previous && previous.matches('p') && !previous.querySelector('img')) {
+          paragraphs.unshift(previous);
+          previous = previous.previousElementSibling;
+        }
+        if (!paragraphs.length) continue;
+        const row = document.createElement('div');
+        row.className = 'journal-image-text';
+        const copy = document.createElement('div');
+        copy.className = 'journal-native-text';
+        paragraphs[0].before(row);
+        row.append(copy);
+        paragraphs.forEach(paragraph => copy.append(paragraph));
+        row.append(image);
+      }
+    }
+    const children = Array.from(body.children);
+    for (let index = 0; index < children.length; index++) {
+      if (!isMedia(children[index])) continue;
+      const run = [];
+      while (index < children.length && isMedia(children[index])) run.push(children[index++]);
+      index--;
+      const start = run.length > 2 ? 1 : 0;
+      for (let offset = start; offset + 1 < run.length; offset += 2) {
+        const pair = document.createElement('div');
+        pair.className = 'journal-pair';
+        run[offset].before(pair);
+        pair.append(run[offset], run[offset + 1]);
+      }
+    }
+  }
+  const initialize = scope => scope.querySelectorAll('[data-journal-design]').forEach(arrange);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => initialize(document));
+  else initialize(document);
+  document.addEventListener('shopify:section:load', event => initialize(event.target));
+})();
+{% endjavascript %}
+{% schema %}
+{
+  "name": "Journal article",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "auto_layout",
+      "label": "Arrange imported article images and quotes",
+      "default": true,
+      "info": "Pairs adjacent photos. In Custom, expands the opening image and places text beside the image before a quote. Existing section layouts stay unchanged."
+    },
+    {
+      "type": "url",
+      "id": "back_url",
+      "label": "Back to Journal URL",
+      "info": "Leave blank to return to the article blog."
+    },
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Back link label",
+      "default": "Back to Journal"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_categories",
+      "label": "Show categories",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show original publication date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Show excerpt below title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured_image",
+      "label": "Show featured image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_featured_image",
+      "label": "Show featured image in Design 2",
+      "default": true,
+      "info": "Custom articles open with a wide hero, even when the standard featured image is hidden. Turn off if the body already starts with the same image."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_caption",
+      "label": "Use featured image description as caption",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "Show previous and next stories",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "previous_label",
+      "label": "Previous story label",
+      "default": "Previous story"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "Next story label",
+      "default": "Next story"
+    },
+    {
+      "type": "range",
+      "id": "body_width",
+      "label": "Reading width",
+      "min": 560,
+      "max": 840,
+      "step": 20,
+      "default": 700,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "label": "Body text size",
+      "min": 15,
+      "max": 22,
+      "step": 1,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Desktop title size",
+      "min": 22,
+      "max": 72,
+      "step": 2,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#FAF9F5"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Body text",
+      "default": "#72736B"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading and links",
+      "default": "#667776"
+    },
+    {
+      "type": "header",
+      "content": "App editorial content"
+    },
+    {
+      "type": "text",
+      "id": "editorial_namespace",
+      "label": "Editorial metafield namespace",
+      "default": "app--440567988225",
+      "info": "Must match the namespace shown in the app editor. Current Roseland app: app--440567988225."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_editorial",
+      "label": "Show saved editorial sections",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_products",
+      "label": "Show related products",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "products_heading",
+      "label": "Related products heading",
+      "default": "Related products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_stories",
+      "label": "Show related Journal stories",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "stories_heading",
+      "label": "Related stories heading",
+      "default": "More from the Journal"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,422 @@
+{% liquid
+  assign journal_blog = blog | default: section.settings.blog
+  assign journal_heading = section.settings.heading | default: journal_blog.title | default: page.title
+%}
+<section class="journal-page-posts journal-listing-page" {% if section.settings.show_heading %}aria-labelledby="JournalPageHeading-{{ section.id }}"{% endif %} style="--jp-width: {{ section.settings.content_width }}px; --jp-columns: {{ section.settings.columns }}; --jp-mobile-columns: {{ section.settings.mobile_columns }}; --jp-gap: {{ section.settings.gap }}px; --jp-top: {{ section.settings.padding_top }}px; --jp-bottom: {{ section.settings.padding_bottom }}px; --jp-heading-size: {{ section.settings.heading_size }}px; --jp-title-size: {{ section.settings.title_size }}px; --jp-background: {{ section.settings.background }}; --jp-text: {{ section.settings.text_color }}; --jp-link: {{ section.settings.link_color }}; --jp-ratio: {{ section.settings.image_ratio }}; --jp-fit: {{ section.settings.image_fit }}; --jp-align: {{ section.settings.alignment }};">
+  <div class="journal-page-posts__inner">
+    {% if section.settings.show_heading or section.settings.introduction != blank %}
+      <header class="journal-page-posts__header">
+        {% if section.settings.show_heading %}<h1 id="JournalPageHeading-{{ section.id }}">{{ journal_heading | escape }}</h1>{% endif %}
+        {% if section.settings.introduction != blank %}<div class="journal-page-posts__intro">{{ section.settings.introduction }}</div>{% endif %}
+      </header>
+    {% endif %}
+    {% if journal_blog != blank %}
+      {% if section.settings.show_filters and journal_blog.all_tags.size > 0 %}
+        <nav class="journal-page-posts__filters" aria-label="{{ section.settings.filters_label | escape }}">
+          <a href="{{ journal_blog.url }}">{{ section.settings.all_label | escape }}</a>
+          {% for category in journal_blog.all_tags %}<a href="{{ journal_blog.url }}/tagged/{{ category | handleize }}">{{ category | escape }}</a>{% endfor %}
+        </nav>
+      {% endif %}
+      {% paginate journal_blog.articles by section.settings.posts_per_page %}
+        {% liquid
+          assign featured_story = false
+          if section.settings.show_featured and paginate.current_page == 1 and current_tags == blank
+            assign featured_story = section.settings.featured_article | default: journal_blog.articles.first
+          endif
+          assign hero_image = section.settings.hero_image | default: featured_story.image
+        %}
+        {% if featured_story %}
+          <article class="journal-page-posts__hero{% unless hero_image %} journal-page-posts__hero--text{% endunless %}">
+            <a href="{{ featured_story.url }}" class="journal-page-posts__hero-link">
+              {% if section.settings.show_images and hero_image %}
+                {{ hero_image | image_url: width: 2200 | image_tag: widths: '480, 720, 1080, 1440, 1800, 2200', sizes: '(min-width: 1440px) 1120px, 74vw', loading: 'eager', fetchpriority: 'high', alt: hero_image.alt }}
+              {% endif %}
+              <div class="journal-page-posts__hero-copy">
+                {% if section.settings.show_categories and featured_story.tags.size > 0 %}<p>{{ featured_story.tags.first | escape }}</p>{% endif %}
+                <h2>{{ featured_story.title | escape }}</h2>
+                {% if section.settings.show_dates %}<time datetime="{{ featured_story.published_at | date: '%Y-%m-%d' }}">{{ featured_story.published_at | date: section.settings.date_format }}</time>{% endif %}
+              </div>
+            </a>
+          </article>
+        {% endif %}
+        <div class="journal-page-posts__grid">
+          {% for story in journal_blog.articles %}
+            {% unless story.id == featured_story.id %}
+              <article class="journal-page-posts__card">
+                <a href="{{ story.url }}" class="journal-page-posts__card-link">
+                  {% if section.settings.show_images and story.image %}
+                    <div class="journal-page-posts__media">{{ story.image | image_url: width: 1000 | image_tag: widths: '320, 480, 640, 800, 1000', sizes: '(min-width: 990px) 24vw, (min-width: 600px) 30vw, 100vw', loading: 'lazy', alt: story.image.alt }}</div>
+                  {% endif %}
+                  <div class="journal-page-posts__card-copy">
+                    {% if section.settings.show_categories and story.tags.size > 0 %}<p class="journal-page-posts__categories">{{ story.tags.first | escape }}</p>{% endif %}
+                    <h2>{{ story.title | escape }}</h2>
+                    {% if section.settings.show_dates %}<time datetime="{{ story.published_at | date: '%Y-%m-%d' }}">{{ story.published_at | date: section.settings.date_format }}</time>{% endif %}
+                    {% if section.settings.show_excerpts %}<p class="journal-page-posts__excerpt">{{ story.excerpt_or_content | strip_html | truncatewords: section.settings.excerpt_words | escape }}</p>{% endif %}
+                    {% if section.settings.show_read_more %}<span class="journal-page-posts__read">{{ section.settings.read_more_label | escape }} <span aria-hidden="true">&#8594;</span></span>{% endif %}
+                  </div>
+                </a>
+              </article>
+            {% endunless %}
+          {% else %}
+            <p class="journal-page-posts__empty">{{ section.settings.empty_message | escape }}</p>
+          {% endfor %}
+        </div>
+        {% if paginate.pages > 1 %}<div class="journal-page-posts__pagination">{{ paginate | default_pagination }}</div>{% endif %}
+      {% endpaginate %}
+    {% else %}
+      <p class="journal-page-posts__empty">{{ section.settings.empty_message | escape }}</p>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+.journal-page-posts{background:var(--jp-background);color:var(--jp-text);padding:var(--jp-top) 24px var(--jp-bottom);font-family:Georgia,"Times New Roman",serif}.journal-page-posts *{box-sizing:border-box}.journal-page-posts__inner{max-width:var(--jp-width);margin:0 auto}.journal-page-posts__header{text-align:var(--jp-align);margin-bottom:30px}.journal-page-posts h1{font-family:inherit;font-size:var(--jp-heading-size);font-weight:400;line-height:1.15;letter-spacing:.015em;margin:0 0 16px;color:var(--jp-text)}.journal-page-posts__intro{max-width:480px;margin:0 auto;font-size:16px;line-height:1.5;letter-spacing:.005em}.journal-page-posts__intro p{margin:0}.journal-page-posts__hero{margin-bottom:24px}.journal-page-posts__hero-link{position:relative;display:block;aspect-ratio:1.67;overflow:hidden;background:#657062;color:white;text-decoration:none}.journal-page-posts__hero-link:after{position:absolute;content:"";inset:0;background:linear-gradient(110deg,#0005,transparent 60%);pointer-events:none}.journal-page-posts__hero img{display:block;width:100%;height:100%;object-fit:var(--jp-fit);object-position:center}.journal-page-posts__hero-copy{position:absolute;z-index:1;top:30px;left:30px;right:30px;max-width:450px;text-shadow:0 1px 5px #0003}.journal-page-posts__hero-copy p{font-style:italic;font-size:14px;line-height:1.4;margin:0 0 7px;color:inherit}.journal-page-posts__hero h2{font-family:inherit;font-size:30px;font-weight:400;line-height:1.15;margin:0 0 7px;color:inherit}.journal-page-posts time{display:block;font-family:inherit;font-size:10px;line-height:1.5;letter-spacing:.025em;text-transform:uppercase}.journal-page-posts__hero time{font-size:10px;color:white}.journal-page-posts__grid{display:grid;grid-template-columns:repeat(var(--jp-columns),minmax(0,1fr));gap:32px var(--jp-gap)}.journal-page-posts__card{min-width:0}.journal-page-posts__card-link{display:block;color:var(--jp-text);text-decoration:none}.journal-page-posts__media{display:block;aspect-ratio:var(--jp-ratio);overflow:hidden;background:#ece9e2}.journal-page-posts__media img{display:block;width:100%;height:100%;object-fit:var(--jp-fit)}.journal-page-posts__card-copy{padding-top:14px}.journal-page-posts__card h2{font-family:inherit;font-size:var(--jp-title-size);font-weight:400;line-height:1.3;letter-spacing:.005em;margin:0 0 8px;color:inherit}.journal-page-posts__card-link:hover h2{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}.journal-page-posts a:focus-visible{outline:2px solid var(--jp-link);outline-offset:5px}.journal-page-posts__categories{font-size:14px;font-style:italic;line-height:1.4;margin:0 0 8px;color:var(--jp-link)}.journal-page-posts__excerpt{font-size:14px;line-height:1.7;margin:10px 0}.journal-page-posts__filters{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 24px;margin-bottom:26px}.journal-page-posts__filters a,.journal-page-posts__read{font-size:13px;color:var(--jp-link);text-underline-offset:4px}.journal-page-posts__pagination{margin-top:32px;text-align:center;font-size:12px}.journal-page-posts__pagination a{padding:8px;color:var(--jp-link);text-underline-offset:4px}.journal-page-posts__empty{grid-column:1/-1;text-align:center;padding:24px 0;font-size:14px}@media(min-width:990px){.journal-page-posts{padding-left:13%;padding-right:13%}}@media(min-width:600px) and (max-width:989px){.journal-page-posts__grid{grid-template-columns:repeat(var(--jp-columns),minmax(0,1fr))}.journal-page-posts__hero-copy{top:24px;left:24px}.journal-page-posts__card h2{font-size:18px}}@media(max-width:599px){.journal-page-posts{padding-left:20px;padding-right:20px}.journal-page-posts__header{margin-bottom:24px}.journal-page-posts h1{font-size:32px}.journal-page-posts__intro{font-size:14px;max-width:320px}.journal-page-posts__hero{margin-bottom:22px}.journal-page-posts__hero-link{aspect-ratio:4/3}.journal-page-posts__hero-copy{top:18px;left:18px;right:18px;max-width:260px}.journal-page-posts__hero h2{font-size:24px}.journal-page-posts__hero-copy p{font-size:12px}.journal-page-posts__grid{grid-template-columns:repeat(var(--jp-mobile-columns),minmax(0,1fr));gap:28px 16px}.journal-page-posts__card h2{font-size:20px}.journal-page-posts__categories{font-size:13px}}
+/* Card hierarchy from the supplied close-up reference. */
+.journal-page-posts__card-copy{padding-top:18px}
+.journal-page-posts__categories{font-family:Georgia,"Times New Roman",serif;font-size:18px;font-style:italic;font-weight:400;line-height:1.4;margin:0 0 12px}
+.journal-page-posts__card h2{font-family:Georgia,"Times New Roman",serif;font-size:var(--jp-title-size,22px);font-weight:400;line-height:1.35;letter-spacing:.01em;margin:0 0 10px}
+.journal-page-posts__card time{font-family:Arial,sans-serif;font-size:11px;line-height:1.5;letter-spacing:.025em;text-transform:uppercase}
+@media(max-width:599px){.journal-page-posts__categories{font-size:16px;margin-bottom:9px}.journal-page-posts__card h2{font-size:21px}.journal-page-posts__card-copy{padding-top:15px}}
+/* Keep this section within the theme width, including narrow screens. */
+/* Constrain document overflow on Journal pages, including theme chrome. */
+html:has(.journal-page-posts){overflow-x:clip}
+body:has(.journal-page-posts){min-width:0;max-width:100%;overflow-x:clip}
+body:has(.journal-page-posts) main{min-width:0;max-width:100%}
+.journal-page-posts{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow-x:clip}
+.journal-page-posts__inner,.journal-page-posts__grid,.journal-page-posts__card,.journal-page-posts__card-link,.journal-page-posts__card-copy,.journal-page-posts__hero,.journal-page-posts__hero-link{min-width:0;max-width:100%}
+.journal-page-posts__inner{width:100%}
+.journal-page-posts img{max-width:100%}
+.journal-page-posts__header,.journal-page-posts__card-copy,.journal-page-posts__hero-copy,.journal-page-posts__filters a{overflow-wrap:anywhere}
+.journal-page-posts__filters{max-width:100%}
+.journal-page-posts__filters a{min-width:0;max-width:100%}
+.journal-page-posts__pagination{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:100%}
+@media(min-width:600px) and (max-width:989px){.journal-page-posts__grid{grid-template-columns:repeat(min(var(--jp-columns),2),minmax(0,1fr))}}
+{% endstylesheet %}
+{% schema %}
+{
+  "name": "Journal index",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog to display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave blank to use the page title.",
+      "default": "Journal"
+    },
+    {
+      "type": "richtext",
+      "id": "introduction",
+      "label": "Introduction",
+      "default": "<p>Stories about natural materials, American making, and<br/>furniture designed to age well.</p>"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "empty_message",
+      "label": "Empty message",
+      "default": "No published stories yet."
+    },
+    {
+      "type": "header",
+      "content": "Stories"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured",
+      "label": "Show large featured story",
+      "default": true
+    },
+    {
+      "type": "article",
+      "id": "featured_article",
+      "label": "Featured article",
+      "info": "Leave blank to feature the newest published article."
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Featured image override",
+      "info": "Optional. Choose a hero photograph, or use the featured article image."
+    },
+    {
+      "type": "range",
+      "id": "posts_per_page",
+      "label": "Posts per page",
+      "min": 3,
+      "max": 24,
+      "step": 1,
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "show_images",
+      "label": "Show images",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image shape",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Portrait"
+        },
+        {
+          "value": "16 / 9",
+          "label": "Wide"
+        }
+      ],
+      "default": "4 / 3"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Fill and crop"
+        },
+        {
+          "value": "contain",
+          "label": "Show entire image"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_categories",
+      "label": "Show category labels",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dates",
+      "label": "Show original publication dates",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "date_format",
+      "label": "Date format",
+      "options": [
+        {
+          "value": "%B %d, %Y",
+          "label": "October 21, 2026"
+        },
+        {
+          "value": "%d %b %Y",
+          "label": "21 Oct 2026"
+        },
+        {
+          "value": "%Y-%m-%d",
+          "label": "2026-10-21"
+        }
+      ],
+      "default": "%B %d, %Y"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpts",
+      "label": "Show excerpts",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "excerpt_words",
+      "label": "Excerpt length (words)",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "show_read_more",
+      "label": "Show read more links",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "read_more_label",
+      "label": "Read more label",
+      "default": "Read story"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "Show category links",
+      "default": true,
+      "info": "Links open the native blog category pages."
+    },
+    {
+      "type": "text",
+      "id": "all_label",
+      "label": "All stories label",
+      "default": "All stories"
+    },
+    {
+      "type": "text",
+      "id": "filters_label",
+      "label": "Category navigation label",
+      "default": "Journal categories"
+    },
+    {
+      "type": "header",
+      "content": "Layout and colors"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Desktop columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "One"
+        },
+        {
+          "value": "2",
+          "label": "Two"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content width",
+      "min": 800,
+      "max": 1600,
+      "step": 40,
+      "default": 1120,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Card spacing",
+      "min": 12,
+      "max": 60,
+      "step": 4,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 28,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "default": 42,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Story title size",
+      "min": 16,
+      "max": 36,
+      "step": 1,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#FAF9F5"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#667776"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Links",
+      "default": "#667776"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Journal index"
+    }
+  ]
+}
+{% endschema %}

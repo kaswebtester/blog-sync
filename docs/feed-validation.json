@@ -1,0 +1,89 @@
+{
+  "checkedAt": "2026-10-21T09:47:28.080Z",
+  "feedUrl": "https://roselandusa.substack.com/feed",
+  "posts": 7,
+  "earliestPublication": "2024-03-21T13:09:00.000Z",
+  "items": [
+    {
+      "sourceId": "https://roselandusa.substack.com/p/three-new-pieces-for-fall",
+      "publicationDate": "2026-10-14T18:45:08.000Z",
+      "bodyCharacters": 9110,
+      "images": 4,
+      "captions": 0,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    },
+    {
+      "sourceId": "https://roselandusa.substack.com/p/introducing-the-russel-wright-collection",
+      "publicationDate": "2026-09-25T15:54:00.000Z",
+      "bodyCharacters": 7231,
+      "images": 3,
+      "captions": 0,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    },
+    {
+      "sourceId": "https://roselandusa.substack.com/p/our-armchair-is-here",
+      "publicationDate": "2026-09-16T18:48:00.000Z",
+      "bodyCharacters": 4968,
+      "images": 2,
+      "captions": 0,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    },
+    {
+      "sourceId": "https://roselandusa.substack.com/p/introducing-a-wide-board-oak-table",
+      "publicationDate": "2026-07-23T18:15:00.000Z",
+      "bodyCharacters": 5988,
+      "images": 2,
+      "captions": 0,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    },
+    {
+      "sourceId": "https://roselandusa.substack.com/p/roselands-first-sofa",
+      "publicationDate": "2026-07-14T18:07:00.000Z",
+      "bodyCharacters": 6154,
+      "images": 2,
+      "captions": 0,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    },
+    {
+      "sourceId": "https://roselandusa.substack.com/p/introducing-the-wave-hill-chair",
+      "publicationDate": "2026-04-29T17:10:00.000Z",
+      "bodyCharacters": 3514,
+      "images": 1,
+      "captions": 0,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    },
+    {
+      "sourceId": "https://roselandusa.substack.com/p/designing-the-roseland-bed",
+      "publicationDate": "2024-03-21T13:09:00.000Z",
+      "bodyCharacters": 15254,
+      "images": 7,
+      "captions": 5,
+      "tags": [],
+      "hasFeaturedImage": true,
+      "stableIdentity": true,
+      "editProtection": true
+    }
+  ],
+  "limitations": [
+    "This verifies RSS parsing and edit-protection rules, not live Shopify mutations.",
+    "Inline images retain source URLs; they are not copied to Shopify Files."
+  ]
+}

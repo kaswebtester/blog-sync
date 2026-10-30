@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "main": {
+      "type": "journal-article",
+      "settings": {
+        "show_excerpt": false,
+        "show_featured_image": false,
+        "title_size": 28,
+        "body_width": 640,
+        "body_size": 18,
+        "background": "#FAF9F5",
+        "text_color": "#72736B",
+        "heading_color": "#667776",
+        "editorial_namespace": "app--440567988225",
+        "auto_layout": true,
+        "show_navigation": false
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

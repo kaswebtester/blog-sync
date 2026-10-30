@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+model Session {
+  id String @id
+  shop String
+  state String
+  isOnline Boolean @default(false)
+  scope String?
+  expires DateTime?
+  accessToken String
+  userId BigInt?
+  firstName String?
+  lastName String?
+  email String?
+  accountOwner Boolean @default(false)
+  locale String?
+  collaborator Boolean? @default(false)
+  emailVerified Boolean? @default(false)
+  refreshToken String?
+  refreshTokenExpires DateTime?
+}
+model Import {
+  id String @id @default(cuid())
+  shop String
+  sourceId String
+  articleId String?
+  title String
+  baseline String @default("{}")
+  lockedFields String @default("[]")
+  importedAt DateTime @default(now())
+  @@unique([shop, sourceId])
+}
+model SyncLock {
+  shop String @id
+  token String
+  expiresAt DateTime
+}
+model JournalSettings {
+  shop String @id
+  feedUrl String @default("https://roselandusa.substack.com/feed")
+  feedName String @default("Roseland on Substack")
+  syncMetadata Boolean @default(true)
+  publishArticles Boolean @default(true)
+  publishedOnly Boolean @default(true)
+  defaultCategory String @default("")
+  journalName String @default("Journal")
+  blogHandle String @default("journal")
+  categories String @default("New Products, Making, Materials, Design History, People & Places")
+  syncEnabled Boolean @default(true)
+  syncInterval Int @default(15)
+  lastSyncAt DateTime?
+}

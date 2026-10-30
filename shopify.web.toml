@@ -1,0 +1,5 @@
+name = "Remix"
+roles = ["frontend", "backend"]
+[commands]
+predev = "npm run setup"
+dev = "npx remix vite:dev"
