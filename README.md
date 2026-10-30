@@ -1,6 +1,6 @@
-# blog-sync-roseland
+# blog-sync-from third party
 
-Remix Shopify app that imports https://roselandusa.substack.com/feed into native articles in the Journal blog. The simple admin screen has one Sync Journal button and links to Shopify's article editor.
+Remix Shopify app that imports https://example.com/feed into native articles in the Journal blog. The simple admin screen has one Sync Journal button and links to Shopify's article editor.
 
 See [the content model and acceptance checks](docs/content-model.md) for the native RSS workflow, protected editing, Shopify metafields/metaobjects and automatic worker setup. Final Figma storefront styling remains a separate theme step.
 
@@ -48,7 +48,7 @@ The GitHub account used for authentication must have write access; setting the c
 4. Link the configuration to your Shopify app, publish its configuration, and install it on a development store. See the Run section below for the existing local workflow.
 5. Run `npm ci`, `npm run setup`, and `npm run build` on the host, then start the app with `npm start`. Configure the host to keep the app running and use the same app URL for your worker or scheduler.
 
-The app URL is the address of your deployed app. `https://roselandusa.substack.com/feed` is the separate RSS source used to import articles. To import another publication, change the Substack RSS URL in **Feed settings** after installation. The current feed validator accepts HTTPS Substack `/feed` URLs only.
+The app URL is the address of your deployed app. `https://example/feed` is the separate RSS source used to import articles. To import another publication, change the Substack RSS URL in **Feed settings** after installation. The current feed validator accepts HTTPS Substack `/feed` URLs only.
 
 ## Run
 
