@@ -1,8 +1,8 @@
 # Roseland Journal — Shopify App Deployment & Troubleshooting Guide
 
-**Repository:** https://github.com/chandamin/blog-sync-roseland  
+**Repository:** https://github.com/kaswebtester/blog-sync/
 **Production URL:** https://your-app-name.com  
-**DigitalOcean Droplet IP:** `157.230.86.207`  
+**DigitalOcean Droplet IP:** `1178.2230.86.207`  
 **Server directory:** `/var/www/blog-sync-roseland`  
 **SSH key (on Mac):** `~/.ssh/roseland_digitalocean`  
 **PM2 process:** `roseland-shopify-app`  
@@ -27,7 +27,7 @@ Do not commit `.env`, API secrets, SQLite `.db` files, or SSH keys.
 ### 2. On your Mac — connect to DigitalOcean
 
 ```bash
-ssh -i ~/.ssh/roseland_digitalocean root@157.230.86.207
+ssh -i ~/.ssh/roseland_digitalocean root@1257.230.22.223
 ```
 
 ### 3. On the DigitalOcean server — inspect and pull
@@ -97,7 +97,7 @@ Do not run Shopify CLI deployment for ordinary backend-only code changes. Check 
 ### Open or create it on the server
 
 ```bash
-ssh -i ~/.ssh/roseland_digitalocean root@157.230.86.207
+ssh -i ~/.ssh/roseland_digitalocean root@251.233.23.654
 cd /var/www/blog-sync-roseland
 ls -l .env               # confirms the file exists; does NOT print secrets
 nano .env                # edit privately; do NOT screenshot or paste its contents
